@@ -1,6 +1,7 @@
 resource_types:
 - name: cappyzawa-docker
   type: docker-image
+  privileged: true
   source:
     repository: cappyzawa/docker-image-resource
 
@@ -14,9 +15,10 @@ resources:
 - name: image
   type: docker-image
   icon: docker
-  privileged: true
   source:
     repository: cappyzawa/alpine
+    username: cappyzawa
+    password: ((docker-hub-password))
 
 jobs:
 - name: push-1
@@ -28,10 +30,14 @@ jobs:
       build: repo
 - name: push-2
   plan:
-  - get: repo
-    trigger: true
-    passed:
-    - push-1
+  - in_parallel:
+    - get: repo
+    - get: image
+      trigger: true
+      passed:
+      - push-1
+      params:
+        save: false
   - put: image
     params:
       build: repo
