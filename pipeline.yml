@@ -1,0 +1,37 @@
+resource_types:
+- name: cappyzawa-docker
+  type: docker-image
+  source:
+    repository: cappyzawa/docker-image-resource
+
+resources:
+- name: repo
+  type: git
+  icon: github-circle
+  source:
+    branch: master
+    uri: https://github.com/cappyzawa/version-hitory-test
+- name: image
+  type: docker-image
+  icon: docker
+  privileged: true
+  source:
+    repository: cappyzawa/alpine
+
+jobs:
+- name: push-1
+  plan:
+  - get: repo
+    trigger: true
+  - put: image
+    params:
+      build: repo
+- name: push-2
+  plan:
+  - get: repo
+    trigger: true
+    passed:
+    - push-1
+  - put: image
+    params:
+      build: repo
